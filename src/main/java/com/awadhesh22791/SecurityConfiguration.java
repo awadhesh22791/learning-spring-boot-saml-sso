@@ -1,7 +1,7 @@
 package com.awadhesh22791;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,23 +17,34 @@ import org.springframework.security.saml2.provider.service.web.RelyingPartyRegis
 import org.springframework.security.saml2.provider.service.web.Saml2AuthenticationTokenConverter;
 import org.springframework.security.saml2.provider.service.web.Saml2MetadataFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.util.ResourceUtils;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
+@Slf4j
 public class SecurityConfiguration {
-
+	
 	@Bean
 	public RelyingPartyRegistrationRepository relyingPartyRegistrations() {
+		ObjectMapper mapper=new ObjectMapper();
 		List<RelyingPartyRegistration>registrations=new ArrayList<>();
-	    RelyingPartyRegistration registration = RelyingPartyRegistrations
-	            .fromMetadataLocation("https://dev-10324309.okta.com/app/exk3kjrai208beFXd5d7/sso/saml/metadata")
-	            .registrationId("example1")
-	            .build();
-	    registrations.add(registration);
-	    RelyingPartyRegistration registration2 = RelyingPartyRegistrations
-	            .fromMetadataLocation("https://dev-10324309.okta.com/app/exk3kjrai208beFXd5d7/sso/saml/metadata")
-	            .registrationId("example2")
-	            .build();
-	    registrations.add(registration2);
+		try {
+			SsoDetails details = mapper.readValue(ResourceUtils.getFile("classpath:sso.json"), SsoDetails.class);
+			if(details!=null) {
+				details.getRelyingParties().stream().forEach(relyingParty->{
+					RelyingPartyRegistration registration = RelyingPartyRegistrations
+				            .fromMetadataLocation(relyingParty.get("metadata"))
+				            .registrationId(relyingParty.get("registration-id"))
+				            .build();
+					registrations.add(registration);
+				});
+			}
+		} catch (IOException e) {
+			log.error("Error reading sso details.",e);
+		}
 	    return new InMemoryRelyingPartyRegistrationRepository(registrations);
 	}
 	

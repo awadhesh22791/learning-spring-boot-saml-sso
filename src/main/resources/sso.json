@@ -1,0 +1,14 @@
+{
+	"relying-parties":[
+		{
+			"registration-id":"example1",
+			"metadata":"https://dev-10324309.okta.com/app/exk3kjrai208beFXd5d7/sso/saml/metadata",
+			"redirect-url":"https://www.google.com"
+		},
+		{
+			"registration-id":"example2",
+			"metadata":"https://dev-10324309.okta.com/app/exk3kjrai208beFXd5d7/sso/saml/metadata",
+			"redirect-url":"https://www.google.com"
+		}
+	]
+}
